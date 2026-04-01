@@ -1,7 +1,7 @@
-// WEEK 4 LAB: Multiple Components
+// WEEK 5 LAB: Arrow Functions & Event Handlers
 // ======================================
 
-// Global stories array (remains outside all components)
+// Global stories array
 const stories = [
   {
     objectID: "1",
@@ -29,8 +29,35 @@ const stories = [
   }
 ];
 
-// Step 3: Search Component
-function Search() {
+// Header Component - Arrow Function
+const Header = () => {
+  return (
+    <header style={{ 
+      marginBottom: '30px',
+      textAlign: 'center',
+      padding: '20px',
+      backgroundColor: '#1e293b',
+      borderRadius: '8px',
+      color: 'white'
+    }}>
+      <h1 style={{ margin: '0', fontSize: '32px' }}>
+        📰 Hacker News Reader
+      </h1>
+      <p style={{ margin: '10px 0 0 0', opacity: 0.8 }}>
+        The latest tech news from the developer community
+      </p>
+    </header>
+  );
+};
+
+// Search Component with Event Handler
+const Search = () => {
+  const handleSearchChange = (event) => {
+    const searchTerm = event.target.value;
+    console.log("Searching for:", searchTerm);
+    console.log(`You typed: "${searchTerm}" (${searchTerm.length} characters)`);
+  };
+  
   return (
     <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
       <label htmlFor="search" style={{ marginRight: '10px', fontWeight: 'bold' }}>
@@ -46,93 +73,87 @@ function Search() {
           border: '1px solid #d1d5db',
           width: '300px'
         }}
+        onChange={handleSearchChange}
       />
     </div>
   );
-}
+};
 
-// Step 1: List Component
-function List() {
+// List Component with Concise Body Arrow Function in map
+const List = () => {
   return (
     <div>
-      {stories.map(function(story) {
-        return (
-          <div 
-            key={story.objectID}
-            style={{
-              border: '1px solid #e2e8f0',
-              padding: '16px',
-              margin: '12px 0',
-              borderRadius: '8px',
-              backgroundColor: '#ffffff'
-            }}
-          >
-            <h3 style={{ margin: '0 0 8px 0' }}>
-              <a 
-                href={story.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  color: '#3b82f6', 
-                  textDecoration: 'none',
-                  fontSize: '18px'
-                }}
-              >
-                {story.title}
-              </a>
-            </h3>
-            <p style={{ margin: '8px 0', color: '#4b5563' }}>
-              By: <strong>{story.author}</strong> | 
-              ⭐ {story.points} points | 
-              💬 {story.num_comments} comments
-            </p>
-          </div>
-        );
-      })}
+      {stories.map((story) => (
+        <div 
+          key={story.objectID}
+          style={{
+            border: '1px solid #e2e8f0',
+            padding: '16px',
+            margin: '12px 0',
+            borderRadius: '8px',
+            backgroundColor: '#ffffff'
+          }}
+        >
+          <h3 style={{ margin: '0 0 8px 0' }}>
+            <a 
+              href={story.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                color: '#3b82f6', 
+                textDecoration: 'none',
+                fontSize: '18px'
+              }}
+            >
+              {story.title}
+            </a>
+          </h3>
+          <p style={{ margin: '8px 0', color: '#4b5563' }}>
+            By: <strong>{story.author}</strong> | 
+            ⭐ {story.points} points | 
+            💬 {story.num_comments} comments
+          </p>
+        </div>
+      ))}
     </div>
   );
-}
+};
 
-// App Component (now much cleaner!)
-function App() {
+// App Component - Arrow Function
+const App = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ color: '#1e293b', borderBottom: '2px solid #3b82f6', paddingBottom: '10px' }}>
-        📰 Hacker News Style Stories
-      </h1>
-      
+      <Header />
       <Search />
       <List />
     </div>
   );
-}
+};
 
 export default App;
 
 /*
-REFLECTION QUESTIONS (Step 4):
+REFLECTION QUESTIONS (Step 8):
 ================================
 
-What does App do now?
-- App is now the main container component
-- It organizes the layout and renders the child components (Search and List)
-- It's like the "manager" that coordinates everything
+1. When do we use concise body arrow functions?
+   Use concise body when the function only returns a single expression/value.
+   Examples: simple JSX rendering, mapping arrays, simple calculations.
+   Syntax: (param) => expression (no return keyword needed)
 
-What does List do?
-- List is responsible ONLY for rendering the stories
-- It maps through the stories array and displays each story's details
-- It has ONE job: show the list of stories
+2. When do we use block body arrow functions?
+   Use block body when the function needs to:
+   - Execute multiple statements
+   - Include logic (if statements, loops, variable declarations)
+   - Handle events
+   - Do more than just return a value
+   Syntax: (param) => { statements; return value; }
 
-What does Search do?
-- Search handles ONLY the search input UI
-- Currently just displays the input field
-- Later it will handle filtering logic
-
-Why is this structure cleaner than before?
-- Each component has a single responsibility (Single Responsibility Principle)
-- Easier to debug (if search has issues, you know where to look)
-- Easier to test (can test components individually)
-- Easier to read and understand
-- Easier to modify (change search UI without touching list rendering)
-- More maintainable as the app grows
+3. What does an event object contain?
+   The event object contains:
+   - target: the DOM element that triggered the event
+   - target.value: the current value of the input
+   - type: the type of event (e.g., "change")
+   - key: the key pressed (for keyboard events)
+   - Many other properties about the event
 */
