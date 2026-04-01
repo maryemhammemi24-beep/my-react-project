@@ -1,23 +1,14 @@
-// WEEK 3 LAB: Hacker News Style Stories
+// WEEK 4 LAB: Multiple Components
 // ======================================
 
-// Step 1: Understanding the Data Structure
-// Each news story will contain:
-// - title: The article title (string)
-// - url: Link to the article (string)
-// - author: Who posted it (string)
-// - objectID: Unique identifier (string or number) -> This will be our React KEY
-// - points: Popularity score (number)
-// - num_comments: Number of comments (number)
-
-// Step 2: Fake data - stories array defined outside the component
+// Global stories array (remains outside all components)
 const stories = [
   {
     objectID: "1",
     title: "React Hooks Explained: A Comprehensive Guide",
     url: "https://react.dev/learn",
     author: "Jane Smith",
-    points: 345,
+    points: 245,
     num_comments: 67
   },
   {
@@ -35,24 +26,35 @@ const stories = [
     author: "Maria Garcia",
     points: 312,
     num_comments: 89
-  },
-  {
-    objectID: "4",
-    title: "Getting Started with React Server Components",
-    url: "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
-    author: "Sarah Johnson",
-    points: 567,
-    num_comments: 123
   }
 ];
 
-function App() {
+// Step 3: Search Component
+function Search() {
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ color: '#1e293b', borderBottom: '2px solid #3b82f6', paddingBottom: '10px' }}>
-        📰 Hacker News Style Stories
-      </h1>
-      
+    <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
+      <label htmlFor="search" style={{ marginRight: '10px', fontWeight: 'bold' }}>
+        🔍 Search stories:
+      </label>
+      <input 
+        type="text" 
+        id="search"
+        placeholder="Search by title..."
+        style={{
+          padding: '8px',
+          borderRadius: '4px',
+          border: '1px solid #d1d5db',
+          width: '300px'
+        }}
+      />
+    </div>
+  );
+}
+
+// Step 1: List Component
+function List() {
+  return (
+    <div>
       {stories.map(function(story) {
         return (
           <div 
@@ -62,17 +64,7 @@ function App() {
               padding: '16px',
               margin: '12px 0',
               borderRadius: '8px',
-              backgroundColor: '#ffffff',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              backgroundColor: '#ffffff'
             }}
           >
             <h3 style={{ margin: '0 0 8px 0' }}>
@@ -83,14 +75,13 @@ function App() {
                 style={{ 
                   color: '#3b82f6', 
                   textDecoration: 'none',
-                  fontSize: '18px',
-                  fontWeight: '600'
+                  fontSize: '18px'
                 }}
               >
                 {story.title}
               </a>
             </h3>
-            <p style={{ margin: '8px 0', color: '#4b5563', fontSize: '14px' }}>
+            <p style={{ margin: '8px 0', color: '#4b5563' }}>
               By: <strong>{story.author}</strong> | 
               ⭐ {story.points} points | 
               💬 {story.num_comments} comments
@@ -102,34 +93,46 @@ function App() {
   );
 }
 
+// App Component (now much cleaner!)
+function App() {
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+      <h1 style={{ color: '#1e293b', borderBottom: '2px solid #3b82f6', paddingBottom: '10px' }}>
+        📰 Hacker News Style Stories
+      </h1>
+      
+      <Search />
+      <List />
+    </div>
+  );
+}
+
 export default App;
 
 /*
-REFLECTION QUESTIONS (Step 7):
+REFLECTION QUESTIONS (Step 4):
 ================================
 
-1. Why is map() essential for rendering lists in React?
-   map() transforms data arrays into JSX element arrays.
-   It's essential because it returns a new array that React can render,
-   while forEach() returns undefined and can't be used directly in JSX.
-   This functional approach is clean, declarative, and matches React's
-   component-based philosophy.
+What does App do now?
+- App is now the main container component
+- It organizes the layout and renders the child components (Search and List)
+- It's like the "manager" that coordinates everything
 
-2. Why is objectID the correct key?
-   objectID is the perfect key because:
-   - It's unique (no two stories share the same ID)
-   - It's stable (doesn't change if we reorder items)
-   - It's data-driven (comes from the actual data, not the UI)
-   Using index as key would cause problems when items are added,
-   removed, or sorted, leading to bugs and performance issues.
+What does List do?
+- List is responsible ONLY for rendering the stories
+- It maps through the stories array and displays each story's details
+- It has ONE job: show the list of stories
 
-3. What will change when we replace fake data with the Hacker News API?
-   The rendering code (map) will stay EXACTLY the same!
-   Changes we'll make:
-   - Add useState for stories array
-   - Add useEffect to fetch data when component mounts
-   - Replace static 'stories' array with fetched data
-   - Add loading state
-   - Add error handling
-   The JSX inside map() won't change at all!
+What does Search do?
+- Search handles ONLY the search input UI
+- Currently just displays the input field
+- Later it will handle filtering logic
+
+Why is this structure cleaner than before?
+- Each component has a single responsibility (Single Responsibility Principle)
+- Easier to debug (if search has issues, you know where to look)
+- Easier to test (can test components individually)
+- Easier to read and understand
+- Easier to modify (change search UI without touching list rendering)
+- More maintainable as the app grows
 */
