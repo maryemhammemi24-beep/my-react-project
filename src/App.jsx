@@ -1,35 +1,6 @@
-// WEEK 5 LAB: Arrow Functions & Event Handlers
-// ======================================
+import { useState } from 'react';
 
-// Global stories array
-const stories = [
-  {
-    objectID: "1",
-    title: "React Hooks Explained: A Comprehensive Guide",
-    url: "https://react.dev/learn",
-    author: "Jane Smith",
-    points: 245,
-    num_comments: 67
-  },
-  {
-    objectID: "2",
-    title: "Understanding JavaScript Closures",
-    url: "https://javascript.info/closure",
-    author: "John Doe",
-    points: 189,
-    num_comments: 43
-  },
-  {
-    objectID: "3",
-    title: "CSS Grid vs Flexbox: When to Use Each",
-    url: "https://css-tricks.com/snippets/css/complete-guide-grid/",
-    author: "Maria Garcia",
-    points: 312,
-    num_comments: 89
-  }
-];
-
-// Header Component - Arrow Function
+// Header Component
 const Header = () => {
   return (
     <header style={{ 
@@ -50,14 +21,9 @@ const Header = () => {
   );
 };
 
-// Search Component with Event Handler
-const Search = () => {
-  const handleSearchChange = (event) => {
-    const searchTerm = event.target.value;
-    console.log("Searching for:", searchTerm);
-    console.log(`You typed: "${searchTerm}" (${searchTerm.length} characters)`);
-  };
-  
+// Search Component
+const Search = ({ onSearch }) => {
+  console.log('🔵 Search rendered');
   return (
     <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
       <label htmlFor="search" style={{ marginRight: '10px', fontWeight: 'bold' }}>
@@ -73,59 +39,112 @@ const Search = () => {
           border: '1px solid #d1d5db',
           width: '300px'
         }}
-        onChange={handleSearchChange}
+        onChange={onSearch}
       />
     </div>
   );
 };
 
-// List Component with Concise Body Arrow Function in map
-const List = () => {
+// Item Component
+const Item = ({ story }) => {
+  console.log('🟣 Item rendered for:', story.title);
+  return (
+    <div 
+      style={{
+        border: '1px solid #e2e8f0',
+        padding: '16px',
+        margin: '12px 0',
+        borderRadius: '8px',
+        backgroundColor: '#ffffff'
+      }}
+    >
+      <h3 style={{ margin: '0 0 8px 0' }}>
+        <a 
+          href={story.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ 
+            color: '#3b82f6', 
+            textDecoration: 'none',
+            fontSize: '18px'
+          }}
+        >
+          {story.title}
+        </a>
+      </h3>
+      <p style={{ margin: '8px 0', color: '#4b5563' }}>
+        By: <strong>{story.author}</strong> | 
+        ⭐ {story.points} points | 
+        💬 {story.num_comments} comments
+      </p>
+    </div>
+  );
+};
+
+// List Component
+const List = ({ stories }) => {
+  console.log('🟡 List rendered, showing:', stories.length, 'stories');
   return (
     <div>
       {stories.map((story) => (
-        <div 
-          key={story.objectID}
-          style={{
-            border: '1px solid #e2e8f0',
-            padding: '16px',
-            margin: '12px 0',
-            borderRadius: '8px',
-            backgroundColor: '#ffffff'
-          }}
-        >
-          <h3 style={{ margin: '0 0 8px 0' }}>
-            <a 
-              href={story.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ 
-                color: '#3b82f6', 
-                textDecoration: 'none',
-                fontSize: '18px'
-              }}
-            >
-              {story.title}
-            </a>
-          </h3>
-          <p style={{ margin: '8px 0', color: '#4b5563' }}>
-            By: <strong>{story.author}</strong> | 
-            ⭐ {story.points} points | 
-            💬 {story.num_comments} comments
-          </p>
-        </div>
+        <Item key={story.objectID} story={story} />
       ))}
     </div>
   );
 };
 
-// App Component - Arrow Function
+// App Component
 const App = () => {
+  console.log('🟢 App rendered');
+  
+  // Step 1: Stories data now inside App (state ownership)
+  const stories = [
+    {
+      objectID: "1",
+      title: "React Hooks Explained: A Comprehensive Guide",
+      url: "https://react.dev/learn",
+      author: "Jane Smith",
+      points: 245,
+      num_comments: 67
+    },
+    {
+      objectID: "2",
+      title: "Understanding JavaScript Closures",
+      url: "https://javascript.info/closure",
+      author: "John Doe",
+      points: 189,
+      num_comments: 43
+    },
+    {
+      objectID: "3",
+      title: "CSS Grid vs Flexbox: When to Use Each",
+      url: "https://css-tricks.com/snippets/css/complete-guide-grid/",
+      author: "Maria Garcia",
+      points: 312,
+      num_comments: 89
+    }
+  ];
+  
+  // Step 4: State for search term
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Step 5: Handler to update search term
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+  
+  // Step 8: Filter stories based on search term (case-insensitive)
+  const filteredStories = stories.filter((story) => {
+    const title = story.title.toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return title.includes(search);
+  });
+  
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <Header />
-      <Search />
-      <List />
+      <Search onSearch={handleSearch} />
+      <List stories={filteredStories} />
     </div>
   );
 };
@@ -133,27 +152,32 @@ const App = () => {
 export default App;
 
 /*
-REFLECTION QUESTIONS (Step 8):
+REFLECTION QUESTIONS (Step 10):
 ================================
 
-1. When do we use concise body arrow functions?
-   Use concise body when the function only returns a single expression/value.
-   Examples: simple JSX rendering, mapping arrays, simple calculations.
-   Syntax: (param) => expression (no return keyword needed)
+1. What is the difference between props and state?
+   PROPS:
+   - Passed from parent to child
+   - Read-only (cannot be modified by child)
+   - External data
+   
+   STATE:
+   - Managed inside a component
+   - Can be updated (using setState)
+   - Internal data
+   - When state changes, component re-renders
 
-2. When do we use block body arrow functions?
-   Use block body when the function needs to:
-   - Execute multiple statements
-   - Include logic (if statements, loops, variable declarations)
-   - Handle events
-   - Do more than just return a value
-   Syntax: (param) => { statements; return value; }
+2. Why do we lift state up?
+   - To share data between sibling components
+   - To have a single source of truth
+   - Makes data flow predictable
+   - Easier to debug (state changes in one place)
+   - In our app: Search and List both need the search term
 
-3. What does an event object contain?
-   The event object contains:
-   - target: the DOM element that triggered the event
-   - target.value: the current value of the input
-   - type: the type of event (e.g., "change")
-   - key: the key pressed (for keyboard events)
-   - Many other properties about the event
+3. Where should filtering logic live?
+   Filtering logic should live in the component that:
+   - Owns the data (stories array)
+   - Has access to the search term (state)
+   - Is responsible for what gets passed to children
+   In our app: App component handles filtering
 */
