@@ -125,21 +125,31 @@ const List = ({ stories, onRemoveItem }) => {
   );
 };
 
-// App Component with Loading and Error States
+// App Component with Explicit Submit Button
 const App = () => {
   const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   
   const [stories, setStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('react');
-  const [isLoading, setIsLoading] = useState(false);
   
-  // Step 9: Add error state
+  // Step 13: Create URL state
+  const [url, setUrl] = useState(`${API_ENDPOINT}react`);
+  
+  const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-    // Reset error when user types new search
     setIsError(false);
+  };
+  
+  // Step 14: Handle submit button click
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (searchTerm.trim() !== '') {
+      console.log('Submitting search for:', searchTerm);
+      setUrl(`${API_ENDPOINT}${searchTerm}`);
+    }
   };
   
   const handleRemoveStory = (objectID) => {
@@ -148,25 +158,16 @@ const App = () => {
     setStories(newStories);
   };
   
+  // Step 15: Use url as dependency instead of searchTerm
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      console.log('Search term empty, skipping fetch');
-      return;
-    }
-    
     const fetchStories = async () => {
       setIsLoading(true);
-      // Step 9: Reset error before fetch
       setIsError(false);
-      console.log(`Fetching stories for: ${searchTerm}`);
+      console.log(`Fetching stories from URL: ${url}`);
       
       try {
-        const url = `${API_ENDPOINT}${searchTerm}`;
-        console.log('Fetching from URL:', url);
-        
         const response = await fetch(url);
         
-        // Check if response is ok
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -177,31 +178,63 @@ const App = () => {
         setStories(data.hits);
       } catch (error) {
         console.error('Fetch error:', error);
-        // Step 9: Set error state
         setIsError(true);
-        setStories([]); // Clear stories on error
+        setStories([]);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchStories();
-  }, [searchTerm]);
+  }, [url]); // Only runs when url changes (on submit)
   
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <Header />
       
-      <InputWithLabel
-        id="search"
-        value={searchTerm}
-        onInputChange={handleSearch}
-        type="text"
-      >
-        <strong>🔍 Search Hacker News:</strong>
-      </InputWithLabel>
+      {/* Step 12 & 14: Form with submit button */}
+      <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <InputWithLabel
+              id="search"
+              value={searchTerm}
+              onInputChange={handleSearch}
+              type="text"
+            >
+              <strong>🔍 Search Hacker News:</strong>
+            </InputWithLabel>
+          </div>
+          <button
+            type="submit"
+            disabled={!searchTerm.trim()}
+            style={{
+              backgroundColor: searchTerm.trim() ? '#3b82f6' : '#9ca3af',
+              color: 'white',
+              border: 'none',
+              padding: '10px 24px',
+              borderRadius: '4px',
+              cursor: searchTerm.trim() ? 'pointer' : 'not-allowed',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              height: '42px'
+            }}
+            onMouseEnter={(e) => {
+              if (searchTerm.trim()) {
+                e.currentTarget.style.backgroundColor = '#2563eb';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (searchTerm.trim()) {
+                e.currentTarget.style.backgroundColor = '#3b82f6';
+              }
+            }}
+          >
+            Search
+          </button>
+        </div>
+      </form>
       
-      {/* Step 10: Conditional rendering for error state */}
       {isError && (
         <div style={{
           backgroundColor: '#fee2e2',
