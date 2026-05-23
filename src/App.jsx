@@ -125,18 +125,21 @@ const List = ({ stories, onRemoveItem }) => {
   );
 };
 
-// App Component with Loading State
+// App Component with Loading and Error States
 const App = () => {
   const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   
   const [stories, setStories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('react');
-  
-  // Step 7: Add loading state
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Step 9: Add error state
+  const [isError, setIsError] = useState(false);
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+    // Reset error when user types new search
+    setIsError(false);
   };
   
   const handleRemoveStory = (objectID) => {
@@ -152,8 +155,9 @@ const App = () => {
     }
     
     const fetchStories = async () => {
-      // Step 7: Set loading to true before fetch
       setIsLoading(true);
+      // Step 9: Reset error before fetch
+      setIsError(false);
       console.log(`Fetching stories for: ${searchTerm}`);
       
       try {
@@ -161,14 +165,22 @@ const App = () => {
         console.log('Fetching from URL:', url);
         
         const response = await fetch(url);
+        
+        // Check if response is ok
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         console.log('Received stories:', data.hits.length);
         setStories(data.hits);
       } catch (error) {
         console.error('Fetch error:', error);
+        // Step 9: Set error state
+        setIsError(true);
+        setStories([]); // Clear stories on error
       } finally {
-        // Step 7: Set loading to false after fetch completes
         setIsLoading(false);
       }
     };
@@ -189,7 +201,21 @@ const App = () => {
         <strong>🔍 Search Hacker News:</strong>
       </InputWithLabel>
       
-      {/* Step 8: Conditional rendering for loading state */}
+      {/* Step 10: Conditional rendering for error state */}
+      {isError && (
+        <div style={{
+          backgroundColor: '#fee2e2',
+          color: '#dc2626',
+          padding: '16px',
+          borderRadius: '8px',
+          marginBottom: '20px',
+          textAlign: 'center',
+          border: '1px solid #fecaca'
+        }}>
+          <strong>⚠️ Error:</strong> Failed to fetch stories. Please check your internet connection and try again.
+        </div>
+      )}
+      
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <div style={{
