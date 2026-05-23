@@ -21,7 +21,7 @@ const Header = () => {
   );
 };
 
-// Reusable InputWithLabel Component with composition
+// Reusable InputWithLabel Component
 const InputWithLabel = ({ id, children, value, onInputChange, type = "text" }) => {
   return (
     <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
@@ -92,7 +92,8 @@ const List = ({ stories }) => {
 
 // App Component
 const App = () => {
-  const stories = [
+  // STEP 6: Renamed to initialStories
+  const initialStories = [
     {
       objectID: "1",
       title: "React Hooks Explained: A Comprehensive Guide",
@@ -119,6 +120,9 @@ const App = () => {
     }
   ];
   
+  // STEP 7: Create stories state (not static anymore!)
+  const [stories, setStories] = useState(initialStories);
+  
   const [searchTerm, setSearchTerm] = useState(() => {
     const savedSearch = localStorage.getItem('search');
     return savedSearch || '';
@@ -132,6 +136,7 @@ const App = () => {
     localStorage.setItem('search', searchTerm);
   }, [searchTerm]);
   
+  // STEP 7: Filter using stories state (not initialStories)
   const filteredStories = stories.filter((story) => {
     const title = story.title.toLowerCase();
     const search = searchTerm.toLowerCase();
