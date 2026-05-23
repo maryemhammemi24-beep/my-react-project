@@ -44,8 +44,8 @@ const InputWithLabel = ({ id, children, value, onInputChange, type = "text" }) =
   );
 };
 
-// Item Component
-const Item = ({ story }) => {
+// STEP 11: Item Component with Delete Button
+const Item = ({ story, onRemoveItem }) => {
   return (
     <div 
       style={{
@@ -53,38 +53,70 @@ const Item = ({ story }) => {
         padding: '16px',
         margin: '12px 0',
         borderRadius: '8px',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}
     >
-      <h3 style={{ margin: '0 0 8px 0' }}>
-        <a 
-          href={story.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ 
-            color: '#3b82f6', 
-            textDecoration: 'none',
-            fontSize: '18px'
-          }}
-        >
-          {story.title}
-        </a>
-      </h3>
-      <p style={{ margin: '8px 0', color: '#4b5563' }}>
-        By: <strong>{story.author}</strong> | 
-        ⭐ {story.points} points | 
-        💬 {story.num_comments} comments
-      </p>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 8px 0' }}>
+          <a 
+            href={story.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              color: '#3b82f6', 
+              textDecoration: 'none',
+              fontSize: '18px'
+            }}
+          >
+            {story.title}
+          </a>
+        </h3>
+        <p style={{ margin: '8px 0', color: '#4b5563' }}>
+          By: <strong>{story.author}</strong> | 
+          ⭐ {story.points} points | 
+          💬 {story.num_comments} comments
+        </p>
+      </div>
+      
+      {/* Delete button */}
+      <button
+        onClick={() => onRemoveItem(story.objectID)}
+        style={{
+          backgroundColor: '#ef4444',
+          color: 'white',
+          border: 'none',
+          padding: '8px 16px',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          marginLeft: '16px'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#dc2626';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#ef4444';
+        }}
+      >
+        Delete ✗
+      </button>
     </div>
   );
 };
 
-// List Component
-const List = ({ stories }) => {
+// STEP 9 & 10: List Component receives and passes onRemoveItem
+const List = ({ stories, onRemoveItem }) => {
   return (
     <div>
       {stories.map((story) => (
-        <Item key={story.objectID} story={story} />
+        <Item 
+          key={story.objectID} 
+          story={story} 
+          onRemoveItem={onRemoveItem}
+        />
       ))}
     </div>
   );
@@ -92,7 +124,6 @@ const List = ({ stories }) => {
 
 // App Component
 const App = () => {
-  // STEP 6: Renamed to initialStories
   const initialStories = [
     {
       objectID: "1",
@@ -120,7 +151,6 @@ const App = () => {
     }
   ];
   
-  // STEP 7: Create stories state (not static anymore!)
   const [stories, setStories] = useState(initialStories);
   
   const [searchTerm, setSearchTerm] = useState(() => {
@@ -132,11 +162,17 @@ const App = () => {
     setSearchTerm(event.target.value);
   };
   
+  // STEP 8: Remove handler using filter
+  const handleRemoveStory = (objectID) => {
+    console.log('Removing story with ID:', objectID);
+    const newStories = stories.filter((story) => story.objectID !== objectID);
+    setStories(newStories);
+  };
+  
   useEffect(() => {
     localStorage.setItem('search', searchTerm);
   }, [searchTerm]);
   
-  // STEP 7: Filter using stories state (not initialStories)
   const filteredStories = stories.filter((story) => {
     const title = story.title.toLowerCase();
     const search = searchTerm.toLowerCase();
@@ -156,7 +192,8 @@ const App = () => {
         <strong>🔍 Search stories:</strong>
       </InputWithLabel>
       
-      <List stories={filteredStories} />
+      {/* STEP 9: Pass remove handler to List */}
+      <List stories={filteredStories} onRemoveItem={handleRemoveStory} />
     </div>
   );
 };
