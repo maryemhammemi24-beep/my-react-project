@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Header Component
 const Header = () => {
@@ -21,8 +21,8 @@ const Header = () => {
   );
 };
 
-// Search Component
-const Search = ({ onSearch }) => {
+// Search Component - Controlled component with destructuring
+const Search = ({ onSearch, searchTerm }) => {
   console.log('🔵 Search rendered');
   return (
     <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
@@ -39,13 +39,14 @@ const Search = ({ onSearch }) => {
           border: '1px solid #d1d5db',
           width: '300px'
         }}
+        value={searchTerm}  // Controlled component
         onChange={onSearch}
       />
     </div>
   );
 };
 
-// Item Component
+// Item Component with destructuring
 const Item = ({ story }) => {
   console.log('🟣 Item rendered for:', story.title);
   return (
@@ -81,7 +82,7 @@ const Item = ({ story }) => {
   );
 };
 
-// List Component
+// List Component with destructuring
 const List = ({ stories }) => {
   console.log('🟡 List rendered, showing:', stories.length, 'stories');
   return (
@@ -97,7 +98,6 @@ const List = ({ stories }) => {
 const App = () => {
   console.log('🟢 App rendered');
   
-  // Step 1: Stories data now inside App (state ownership)
   const stories = [
     {
       objectID: "1",
@@ -125,15 +125,24 @@ const App = () => {
     }
   ];
   
-  // Step 4: State for search term
-  const [searchTerm, setSearchTerm] = useState('');
+  // Initialize state from localStorage
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const savedSearch = localStorage.getItem('search');
+    console.log('Loading saved search term:', savedSearch);
+    return savedSearch || '';
+  });
   
-  // Step 5: Handler to update search term
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  // Step 8: Filter stories based on search term (case-insensitive)
+  // useEffect to save to localStorage when searchTerm changes
+  useEffect(() => {
+    console.log('useEffect: Saving searchTerm to localStorage:', searchTerm);
+    localStorage.setItem('search', searchTerm);
+  }, [searchTerm]); // Dependency array - runs when searchTerm changes
+  
+  // Filter stories based on search term
   const filteredStories = stories.filter((story) => {
     const title = story.title.toLowerCase();
     const search = searchTerm.toLowerCase();
@@ -143,7 +152,7 @@ const App = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <Header />
-      <Search onSearch={handleSearch} />
+      <Search onSearch={handleSearch} searchTerm={searchTerm} />
       <List stories={filteredStories} />
     </div>
   );
@@ -152,32 +161,36 @@ const App = () => {
 export default App;
 
 /*
-REFLECTION QUESTIONS (Step 10):
+REFLECTION QUESTIONS (Step 7):
 ================================
 
-1. What is the difference between props and state?
-   PROPS:
-   - Passed from parent to child
-   - Read-only (cannot be modified by child)
-   - External data
+1. What is a controlled component?
+   A controlled component is an input whose value is controlled by React state.
+   - Value comes from state, not from DOM
+   - Changes are handled by React (onChange event)
+   - Single source of truth in React
+   - Example: <input value={searchTerm} onChange={handleSearch} />
+
+2. What is a side effect in React?
+   A side effect is anything that affects something outside the component:
+   - Updating localStorage
+   - Fetching data from an API
+   - Setting up subscriptions
+   - Manually changing the DOM
+   - Timers (setTimeout, setInterval)
    
-   STATE:
-   - Managed inside a component
-   - Can be updated (using setState)
-   - Internal data
-   - When state changes, component re-renders
+   React components should primarily render UI. Side effects go in useEffect.
 
-2. Why do we lift state up?
-   - To share data between sibling components
-   - To have a single source of truth
-   - Makes data flow predictable
-   - Easier to debug (state changes in one place)
-   - In our app: Search and List both need the search term
-
-3. Where should filtering logic live?
-   Filtering logic should live in the component that:
-   - Owns the data (stories array)
-   - Has access to the search term (state)
-   - Is responsible for what gets passed to children
-   In our app: App component handles filtering
+3. Why do we use useEffect instead of calling code directly?
+   - Avoids infinite loops (if we update state in render)
+   - Prevents performance issues
+   - Separates rendering from side effects
+   - Allows us to control WHEN effects run (dependency array)
+   - Cleaner code organization
+   - React can optimize re-renders better
+   - Example: Without useEffect, localStorage would save on every render
 */
+
+
+
+
