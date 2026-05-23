@@ -125,59 +125,56 @@ const List = ({ stories, onRemoveItem }) => {
   );
 };
 
-// App Component
+// App Component with Loading State
 const App = () => {
-  // Step 1: API endpoint constant
   const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   
-  // State for stories from API
   const [stories, setStories] = useState([]);
-  
-  // Search term state
   const [searchTerm, setSearchTerm] = useState('react');
+  
+  // Step 7: Add loading state
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  // Step 8: Remove handler (still works with API data)
   const handleRemoveStory = (objectID) => {
     console.log('Removing story with ID:', objectID);
     const newStories = stories.filter((story) => story.objectID !== objectID);
     setStories(newStories);
   };
   
-  // Step 2, 3, 4, 5: Data fetching effect
   useEffect(() => {
-    // Step 3: Guard condition - don't fetch if searchTerm is empty
     if (searchTerm.trim() === '') {
       console.log('Search term empty, skipping fetch');
       return;
     }
     
-    // Step 2 & 3: Build URL and fetch
     const fetchStories = async () => {
+      // Step 7: Set loading to true before fetch
+      setIsLoading(true);
       console.log(`Fetching stories for: ${searchTerm}`);
       
       try {
-        // Step 3: Build request URL
         const url = `${API_ENDPOINT}${searchTerm}`;
         console.log('Fetching from URL:', url);
         
-        // Step 4: Fetch data
         const response = await fetch(url);
         const data = await response.json();
         
-        // Step 4: Extract hits and update state
         console.log('Received stories:', data.hits.length);
         setStories(data.hits);
       } catch (error) {
         console.error('Fetch error:', error);
+      } finally {
+        // Step 7: Set loading to false after fetch completes
+        setIsLoading(false);
       }
     };
     
     fetchStories();
-  }, [searchTerm]); // Runs when searchTerm changes
+  }, [searchTerm]);
   
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -192,7 +189,29 @@ const App = () => {
         <strong>🔍 Search Hacker News:</strong>
       </InputWithLabel>
       
-      <List stories={stories} onRemoveItem={handleRemoveStory} />
+      {/* Step 8: Conditional rendering for loading state */}
+      {isLoading ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '40px',
+            height: '40px',
+            border: '4px solid #f3f4f6',
+            borderTop: '4px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading stories...</p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      ) : (
+        <List stories={stories} onRemoveItem={handleRemoveStory} />
+      )}
     </div>
   );
 };
