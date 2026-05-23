@@ -15,7 +15,7 @@ const Header = () => {
         📰 Hacker News Reader
       </h1>
       <p style={{ margin: '10px 0 0 0', opacity: 0.8 }}>
-        The latest tech news from the developer community
+        Real-time stories from the Hacker News API
       </p>
     </header>
   );
@@ -44,7 +44,7 @@ const InputWithLabel = ({ id, children, value, onInputChange, type = "text" }) =
   );
 };
 
-// STEP 11: Item Component with Delete Button
+// Item Component with Delete Button
 const Item = ({ story, onRemoveItem }) => {
   return (
     <div 
@@ -81,7 +81,6 @@ const Item = ({ story, onRemoveItem }) => {
         </p>
       </div>
       
-      {/* Delete button */}
       <button
         onClick={() => onRemoveItem(story.objectID)}
         style={{
@@ -107,8 +106,12 @@ const Item = ({ story, onRemoveItem }) => {
   );
 };
 
-// STEP 9 & 10: List Component receives and passes onRemoveItem
+// List Component
 const List = ({ stories, onRemoveItem }) => {
+  if (stories.length === 0) {
+    return <p style={{ textAlign: 'center', color: '#6b7280' }}>No stories found. Try searching for something!</p>;
+  }
+  
   return (
     <div>
       {stories.map((story) => (
@@ -124,60 +127,57 @@ const List = ({ stories, onRemoveItem }) => {
 
 // App Component
 const App = () => {
-  const initialStories = [
-    {
-      objectID: "1",
-      title: "React Hooks Explained: A Comprehensive Guide",
-      url: "https://react.dev/learn",
-      author: "Jane Smith",
-      points: 245,
-      num_comments: 67
-    },
-    {
-      objectID: "2",
-      title: "Understanding JavaScript Closures",
-      url: "https://javascript.info/closure",
-      author: "John Doe",
-      points: 189,
-      num_comments: 43
-    },
-    {
-      objectID: "3",
-      title: "CSS Grid vs Flexbox: When to Use Each",
-      url: "https://css-tricks.com/snippets/css/complete-guide-grid/",
-      author: "Maria Garcia",
-      points: 312,
-      num_comments: 89
-    }
-  ];
+  // Step 1: API endpoint constant
+  const API_ENDPOINT = 'https://hn.algolia.com/api/v1/search?query=';
   
-  const [stories, setStories] = useState(initialStories);
+  // State for stories from API
+  const [stories, setStories] = useState([]);
   
-  const [searchTerm, setSearchTerm] = useState(() => {
-    const savedSearch = localStorage.getItem('search');
-    return savedSearch || '';
-  });
+  // Search term state
+  const [searchTerm, setSearchTerm] = useState('react');
   
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
   
-  // STEP 8: Remove handler using filter
+  // Step 8: Remove handler (still works with API data)
   const handleRemoveStory = (objectID) => {
     console.log('Removing story with ID:', objectID);
     const newStories = stories.filter((story) => story.objectID !== objectID);
     setStories(newStories);
   };
   
+  // Step 2, 3, 4, 5: Data fetching effect
   useEffect(() => {
-    localStorage.setItem('search', searchTerm);
-  }, [searchTerm]);
-  
-  const filteredStories = stories.filter((story) => {
-    const title = story.title.toLowerCase();
-    const search = searchTerm.toLowerCase();
-    return title.includes(search);
-  });
+    // Step 3: Guard condition - don't fetch if searchTerm is empty
+    if (searchTerm.trim() === '') {
+      console.log('Search term empty, skipping fetch');
+      return;
+    }
+    
+    // Step 2 & 3: Build URL and fetch
+    const fetchStories = async () => {
+      console.log(`Fetching stories for: ${searchTerm}`);
+      
+      try {
+        // Step 3: Build request URL
+        const url = `${API_ENDPOINT}${searchTerm}`;
+        console.log('Fetching from URL:', url);
+        
+        // Step 4: Fetch data
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // Step 4: Extract hits and update state
+        console.log('Received stories:', data.hits.length);
+        setStories(data.hits);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+    
+    fetchStories();
+  }, [searchTerm]); // Runs when searchTerm changes
   
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -189,11 +189,10 @@ const App = () => {
         onInputChange={handleSearch}
         type="text"
       >
-        <strong>🔍 Search stories:</strong>
+        <strong>🔍 Search Hacker News:</strong>
       </InputWithLabel>
       
-      {/* STEP 9: Pass remove handler to List */}
-      <List stories={filteredStories} onRemoveItem={handleRemoveStory} />
+      <List stories={stories} onRemoveItem={handleRemoveStory} />
     </div>
   );
 };
