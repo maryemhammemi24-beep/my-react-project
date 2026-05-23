@@ -21,34 +21,31 @@ const Header = () => {
   );
 };
 
-// Search Component - Controlled component with destructuring
-const Search = ({ onSearch, searchTerm }) => {
-  console.log('🔵 Search rendered');
+// Reusable InputWithLabel Component with composition
+const InputWithLabel = ({ id, children, value, onInputChange, type = "text" }) => {
   return (
     <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
-      <label htmlFor="search" style={{ marginRight: '10px', fontWeight: 'bold' }}>
-        🔍 Search stories:
+      <label htmlFor={id} style={{ marginRight: '10px', fontWeight: 'bold' }}>
+        {children}
       </label>
       <input 
-        type="text" 
-        id="search"
-        placeholder="Search by title..."
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
         style={{
           padding: '8px',
           borderRadius: '4px',
           border: '1px solid #d1d5db',
           width: '300px'
         }}
-        value={searchTerm}  // Controlled component
-        onChange={onSearch}
       />
     </div>
   );
 };
 
-// Item Component with destructuring
+// Item Component
 const Item = ({ story }) => {
-  console.log('🟣 Item rendered for:', story.title);
   return (
     <div 
       style={{
@@ -82,9 +79,8 @@ const Item = ({ story }) => {
   );
 };
 
-// List Component with destructuring
+// List Component
 const List = ({ stories }) => {
-  console.log('🟡 List rendered, showing:', stories.length, 'stories');
   return (
     <div>
       {stories.map((story) => (
@@ -96,8 +92,6 @@ const List = ({ stories }) => {
 
 // App Component
 const App = () => {
-  console.log('🟢 App rendered');
-  
   const stories = [
     {
       objectID: "1",
@@ -125,10 +119,8 @@ const App = () => {
     }
   ];
   
-  // Initialize state from localStorage
   const [searchTerm, setSearchTerm] = useState(() => {
     const savedSearch = localStorage.getItem('search');
-    console.log('Loading saved search term:', savedSearch);
     return savedSearch || '';
   });
   
@@ -136,13 +128,10 @@ const App = () => {
     setSearchTerm(event.target.value);
   };
   
-  // useEffect to save to localStorage when searchTerm changes
   useEffect(() => {
-    console.log('useEffect: Saving searchTerm to localStorage:', searchTerm);
     localStorage.setItem('search', searchTerm);
-  }, [searchTerm]); // Dependency array - runs when searchTerm changes
+  }, [searchTerm]);
   
-  // Filter stories based on search term
   const filteredStories = stories.filter((story) => {
     const title = story.title.toLowerCase();
     const search = searchTerm.toLowerCase();
@@ -152,45 +141,19 @@ const App = () => {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <Header />
-      <Search onSearch={handleSearch} searchTerm={searchTerm} />
+      
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        onInputChange={handleSearch}
+        type="text"
+      >
+        <strong>🔍 Search stories:</strong>
+      </InputWithLabel>
+      
       <List stories={filteredStories} />
     </div>
   );
 };
 
 export default App;
-
-/*
-REFLECTION QUESTIONS (Step 7):
-================================
-
-1. What is a controlled component?
-   A controlled component is an input whose value is controlled by React state.
-   - Value comes from state, not from DOM
-   - Changes are handled by React (onChange event)
-   - Single source of truth in React
-   - Example: <input value={searchTerm} onChange={handleSearch} />
-
-2. What is a side effect in React?
-   A side effect is anything that affects something outside the component:
-   - Updating localStorage
-   - Fetching data from an API
-   - Setting up subscriptions
-   - Manually changing the DOM
-   - Timers (setTimeout, setInterval)
-   
-   React components should primarily render UI. Side effects go in useEffect.
-
-3. Why do we use useEffect instead of calling code directly?
-   - Avoids infinite loops (if we update state in render)
-   - Prevents performance issues
-   - Separates rendering from side effects
-   - Allows us to control WHEN effects run (dependency array)
-   - Cleaner code organization
-   - React can optimize re-renders better
-   - Example: Without useEffect, localStorage would save on every render
-*/
-
-
-
-
